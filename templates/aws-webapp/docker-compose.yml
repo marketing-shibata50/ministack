@@ -1,0 +1,21 @@
+# MK2 で常駐させる MiniStack（ローカル AWS）
+services:
+  ministack:
+    image: ministackorg/ministack:latest
+    container_name: ministack
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4566:4566"      # 外部非公開（MK2 内のみ）
+    environment:
+      MINISTACK_REGION: ap-northeast-1
+      PERSIST_STATE: "1"           # 再起動してもリソースを保持
+      RDS_PERSIST: "1"             # DB データも保持
+      MINISTACK_RDS_PUBLIC_ENDPOINT: "1"
+      MINISTACK_HOST: localhost    # RDS の接続先を MK2 側から見たアドレスで返す
+      # RDS の DB コンテナはホストの 15432 番〜に直接公開される（RDS_BASE_PORT で変更可）
+    volumes:
+      - ministack-state:/tmp/ministack-state
+      - /var/run/docker.sock:/var/run/docker.sock  # RDS / ECS / Lambda の実コンテナ起動用
+
+volumes:
+  ministack-state: {}
